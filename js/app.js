@@ -563,13 +563,20 @@ class App {
 
     if (!tipo) return;
 
+    console.log('Loading lugares for tipo:', tipo);
+    console.log('CENTROS_CCSS available:', typeof CENTROS_CCSS !== 'undefined');
+    
     const centros = getCentrosPorTipo(tipo);
+    console.log('Centros found:', centros.length);
+    
     centros.forEach(centro => {
       const option = document.createElement('option');
       option.value = centro;
       option.textContent = centro;
       lugarSelect.appendChild(option);
     });
+    
+    console.log('Options added to select:', lugarSelect.options.length);
   }
 
   calculateDias() {
@@ -633,22 +640,33 @@ class App {
     
     if (!query || query.length < 2) {
       suggestionsContainer.classList.remove('active');
+      suggestionsContainer.innerHTML = '';
       return;
     }
 
     const results = buscarPuestos(query, 10);
 
     if (results.length === 0) {
-      suggestionsContainer.innerHTML = '<div class="suggestion-item">No se encontraron resultados</div>';
+      suggestionsContainer.innerHTML = '<div class="suggestion-item no-hover">No se encontraron resultados</div>';
       suggestionsContainer.classList.add('active');
       return;
     }
 
     suggestionsContainer.innerHTML = results.map(puesto => `
-      <div class="suggestion-item" onclick="app.selectPuesto('${puesto.replace(/'/g, "\\'")}')">
+      <div class="suggestion-item" data-puesto="${puesto.replace(/"/g, '&quot;')}">
         ${puesto.replace(new RegExp(query, 'gi'), match => `<strong>${match}</strong>`)}
       </div>
     `).join('');
+
+    // Agregar event listeners a cada sugerencia
+    suggestionsContainer.querySelectorAll('.suggestion-item').forEach(item => {
+      if (!item.classList.contains('no-hover')) {
+        item.addEventListener('click', () => {
+          const puesto = item.getAttribute('data-puesto');
+          this.selectPuesto(puesto);
+        });
+      }
+    });
 
     suggestionsContainer.classList.add('active');
   }
