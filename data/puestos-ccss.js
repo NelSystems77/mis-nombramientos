@@ -63,9 +63,10 @@ const PUESTOS_CCSS = [
   "Farmacéutico Especialista",
   "Técnico en Farmacia 1",
   "Técnico en Farmacia 2",
+  "Técnico en Farmacia 3",
   "Auxiliar de Farmacia",
   "Regente de Farmacia",
-  "Jefe de Farmacia",
+  "Jefatura de Almacen Local de Farmacia",
   "Director de Farmacia",
   
   // Área de Laboratorio
