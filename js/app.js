@@ -5,6 +5,7 @@ class App {
     this.currentNombramiento = null;
     this.horasExtrasCounter = 0;
     this.theme = 'light';
+    this.currentFilter = null; // Para filtros especiales del dashboard
   }
 
   async init() {
@@ -193,6 +194,12 @@ class App {
       filterEstado.addEventListener('change', () => this.filterNombramientos());
     }
 
+    // Botón limpiar filtros
+    const btnClearFilters = document.getElementById('btnClearFilters');
+    if (btnClearFilters) {
+      btnClearFilters.addEventListener('click', () => this.clearFilters());
+    }
+
     // Filtros - Historial
     const searchHistorial = document.getElementById('searchHistorial');
     if (searchHistorial) {
@@ -203,6 +210,14 @@ class App {
     if (filterAccion) {
       filterAccion.addEventListener('change', () => this.filterHistorial());
     }
+
+    // Dashboard - Tarjetas clickeables
+    document.querySelectorAll('.stat-card.clickable').forEach(card => {
+      card.addEventListener('click', (e) => {
+        const action = e.currentTarget.dataset.action;
+        this.handleDashboardCardClick(action);
+      });
+    });
 
     // Dashboard - Período
     const dashboardPeriod = document.getElementById('dashboardPeriod');
@@ -242,6 +257,60 @@ class App {
   }
 
   // Navegación
+  // Manejo de clics en tarjetas del dashboard
+  handleDashboardCardClick(action) {
+    // Navegar a nombramientos
+    this.switchView('nombramientos');
+    
+    // Resetear todos los filtros primero
+    this.clearFilters();
+    
+    const filterAlert = document.getElementById('filterAlert');
+    const filterAlertText = filterAlert?.querySelector('.filter-alert-text');
+    
+    // Aplicar filtro específico según la acción
+    switch (action) {
+      case 'view-nombramientos':
+        // Mostrar todos, sin filtro adicional
+        if (filterAlert) filterAlert.style.display = 'none';
+        break;
+        
+      case 'view-horas-extras':
+        // Filtrar nombramientos con horas extras
+        this.currentFilter = 'horas-extras';
+        if (filterAlert && filterAlertText) {
+          filterAlertText.textContent = 'Mostrando solo nombramientos con horas extras';
+          filterAlert.style.display = 'flex';
+        }
+        break;
+        
+      case 'view-proximos-vencer':
+        // Filtrar próximos a vencer
+        document.getElementById('filterEstado').value = 'proximo';
+        if (filterAlert && filterAlertText) {
+          filterAlertText.textContent = 'Mostrando nombramientos próximos a vencer (15 días o menos)';
+          filterAlert.style.display = 'flex';
+        }
+        break;
+    }
+    
+    // Recargar con el filtro aplicado
+    this.filterNombramientos();
+  }
+
+  clearFilters() {
+    document.getElementById('searchNombramientos').value = '';
+    document.getElementById('filterTipo').value = '';
+    document.getElementById('filterLugar').value = '';
+    document.getElementById('filterEstado').value = '';
+    this.currentFilter = null;
+    
+    const filterAlert = document.getElementById('filterAlert');
+    if (filterAlert) filterAlert.style.display = 'none';
+    
+    this.filterNombramientos();
+  }
+
   switchView(viewName) {
     // Actualizar vistas
     document.querySelectorAll('.view').forEach(view => {
@@ -407,9 +476,10 @@ class App {
               ${new Date(n.fechaDesde).toLocaleDateString('es-CR')} - ${new Date(n.fechaHasta).toLocaleDateString('es-CR')}
             </div>
             ${n.horasExtras && n.horasExtras.length > 0 ? `
-              <div class="info-row">
+              <div class="info-row horas-extras-highlight">
                 <span class="icon">⏰</span>
-                ${n.horasExtras.reduce((sum, he) => sum + (he.horas || 0), 0)} horas extras
+                <strong>${n.horasExtras.reduce((sum, he) => sum + (he.horas || 0), 0)} horas extras</strong>
+                <span class="horas-badge">${n.horasExtras.length} registro${n.horasExtras.length > 1 ? 's' : ''}</span>
               </div>
             ` : ''}
             ${n.prorrogas && n.prorrogas.length > 0 ? `
@@ -459,10 +529,18 @@ class App {
         // Filtro estado
         if (filterEstado && n.estado !== filterEstado) return false;
 
+        // Filtro especial: horas extras (desde dashboard)
+        if (this.currentFilter === 'horas-extras') {
+          if (!n.horasExtras || n.horasExtras.length === 0) return false;
+        }
+
         return true;
       });
 
       this.renderNombramientos(filtered);
+      
+      // Limpiar filtro especial después de aplicarlo
+      this.currentFilter = null;
     } catch (error) {
       console.error('Error al filtrar nombramientos:', error);
     }
