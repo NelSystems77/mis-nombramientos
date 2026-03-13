@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="description" content="Control de nombramientos y tiempo extraordinario CCSS">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <title>Mis Nombramientos - CCSS</title>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="Logo" class="app-logo">
+                <h1>Mis Nombramientos</h1>
+            </div>
+            <div class="header-actions">
+                <button id="profileBtn" class="icon-btn" title="Perfil">
+                    <span class="icon">👤</span>
+                </button>
+                <button id="themeToggle" class="icon-btn" title="Cambiar tema">
+                    <span class="icon">🌓</span>
+                </button>
+                <button id="installBtn" class="btn-install" style="display: none;">
+                    Instalar App
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <button class="nav-btn active" data-view="dashboard">
+            <span class="icon">📊</span>
+            Dashboard
+        </button>
+        <button class="nav-btn" data-view="nombramientos">
+            <span class="icon">📋</span>
+            Nombramientos
+        </button>
+        <button class="nav-btn" data-view="reportes">
+            <span class="icon">📄</span>
+            Reportes
+        </button>
+        <button class="nav-btn" data-view="historial">
+            <span class="icon">🕐</span>
+            Historial
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard View -->
+        <section id="dashboard-view" class="view active">
+            <div class="dashboard-header">
+                <div>
+                    <h2>Dashboard</h2>
+                    <p id="userGreeting" class="user-greeting" style="display: none;"></p>
+                </div>
+                <div class="date-range-filter">
+                    <select id="dashboardPeriod">
+                        <option value="all">Todo el tiempo</option>
+                        <option value="year">Este año</option>
+                        <option value="month">Este mes</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalDias">0</div>
+                        <div class="stat-label">Días Totales</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalNombramientos">0</div>
+                        <div class="stat-label">Nombramientos</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="horasExtras">0</div>
+                        <div class="stat-label">Horas Extras</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔔</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="proximosVencer">0</div>
+                        <div class="stat-label">Por Vencer</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Nombramientos por Mes</h3>
+                    <canvas id="chartMeses"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Por Tipo de Nombramiento</h3>
+                    <canvas id="chartTipos"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Horas Extras Mensuales</h3>
+                    <canvas id="chartHorasExtras"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Top 5 Lugares</h3>
+                    <canvas id="chartLugares"></canvas>
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments -->
+            <div class="section-card">
+                <h3>⚠️ Nombramientos Próximos a Vencer</h3>
+                <div id="proximosVencerList" class="appointments-list"></div>
+            </div>
+        </section>
+
+        <!-- Nombramientos View -->
+        <section id="nombramientos-view" class="view">
+            <div class="view-header">
+                <h2>Mis Nombramientos</h2>
+                <button id="btnNuevoNombramiento" class="btn-primary">
+                    <span class="icon">➕</span>
+                    Nuevo Nombramiento
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <input type="text" id="searchNombramientos" placeholder="Buscar..." class="search-input">
+                <select id="filterTipo">
+                    <option value="">Todos los tipos</option>
+                    <option value="interino">Interino</option>
+                    <option value="ascenso">Ascenso</option>
+                    <option value="otro">Otro</option>
+                </select>
+                <select id="filterLugar">
+                    <option value="">Todos los lugares</option>
+                </select>
+                <select id="filterEstado">
+                    <option value="">Todos los estados</option>
+                    <option value="activo">Activos</option>
+                    <option value="vencido">Vencidos</option>
+                    <option value="proximo">Próximos a vencer</option>
+                </select>
+            </div>
+
+            <!-- Nombramientos List -->
+            <div id="nombramientosList" class="nombramientos-grid"></div>
+        </section>
+
+        <!-- Reportes View -->
+        <section id="reportes-view" class="view">
+            <div class="view-header">
+                <h2>Reportes</h2>
+            </div>
+
+            <div class="report-config">
+                <div class="form-group">
+                    <label>Período del Reporte</label>
+                    <select id="reportPeriod">
+                        <option value="all">Todo el tiempo</option>
+                        <option value="year">Este año</option>
+                        <option value="month">Este mes</option>
+                        <option value="custom">Rango personalizado</option>
+                    </select>
+                </div>
+
+                <div id="customDateRange" class="custom-date-range" style="display: none;">
+                    <div class="form-group">
+                        <label>Desde</label>
+                        <input type="date" id="reportDateFrom">
+                    </div>
+                    <div class="form-group">
+                        <label>Hasta</label>
+                        <input type="date" id="reportDateTo">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Reporte</label>
+                    <select id="reportType">
+                        <option value="general">General - Resumen completo</option>
+                        <option value="detallado">Detallado - Todos los nombramientos</option>
+                        <option value="horas">Horas Extraordinarias</option>
+                        <option value="lugares">Por Lugar de Trabajo</option>
+                    </select>
+                </div>
+
+                <div class="report-actions">
+                    <button id="btnPreviewReport" class="btn-secondary">
+                        <span class="icon">👁️</span>
+                        Vista Previa
+                    </button>
+                    <button id="btnExportPDF" class="btn-primary">
+                        <span class="icon">📄</span>
+                        Exportar PDF
+                    </button>
+                    <button id="btnExportExcel" class="btn-primary">
+                        <span class="icon">📊</span>
+                        Exportar Excel
+                    </button>
+                </div>
+            </div>
+
+            <div id="reportPreview" class="report-preview"></div>
+        </section>
+
+        <!-- Historial View -->
+        <section id="historial-view" class="view">
+            <div class="view-header">
+                <h2>Historial de Cambios</h2>
+            </div>
+
+            <div class="filters-bar">
+                <input type="text" id="searchHistorial" placeholder="Buscar en historial..." class="search-input">
+                <select id="filterAccion">
+                    <option value="">Todas las acciones</option>
+                    <option value="crear">Crear</option>
+                    <option value="editar">Editar</option>
+                    <option value="eliminar">Eliminar</option>
+                    <option value="prorrogar">Prorrogar</option>
+                </select>
+            </div>
+
+            <div id="historialList" class="historial-list"></div>
+        </section>
+    </main>
+
+    <!-- Modal for New/Edit Nombramiento -->
+    <div id="nombramientoModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nuevo Nombramiento</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="nombramientoForm">
+                    <!-- Lugar de Nombramiento -->
+                    <div class="form-section">
+                        <h3>📍 Lugar de Nombramiento</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tipoLugar">Tipo de Centro *</label>
+                                <select id="tipoLugar" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="ebais">EBAIS</option>
+                                    <option value="clinicas">Clínica</option>
+                                    <option value="areas">Área de Salud</option>
+                                    <option value="hospitales">Hospital Nacional</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="lugar">Centro de Trabajo *</label>
+                                <select id="lugar" required disabled>
+                                    <option value="">Primero seleccione el tipo...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fechas -->
+                    <div class="form-section">
+                        <h3>📅 Período de Nombramiento</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fechaDesde">Desde *</label>
+                                <input type="date" id="fechaDesde" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fechaHasta">Hasta *</label>
+                                <input type="date" id="fechaHasta" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Días Totales</label>
+                                <input type="text" id="diasTotales" readonly class="readonly-field">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Puesto -->
+                    <div class="form-section">
+                        <h3>👤 Información del Puesto</h3>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="puesto">Perfil del Puesto *</label>
+                                <input type="text" id="puestoSearch" placeholder="Buscar puesto..." autocomplete="off">
+                                <div id="puestoSuggestions" class="suggestions-dropdown"></div>
+                                <input type="hidden" id="puesto" required>
+                                <small class="help-text">Escriba para buscar en el manual de puestos CCSS</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tipoNombramiento">Tipo de Nombramiento *</label>
+                                <select id="tipoNombramiento" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="interino">Nombramiento Interino</option>
+                                    <option value="ascenso">Ascenso</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="otroTipoContainer" style="display: none;">
+                                <label for="otroTipo">Especifique *</label>
+                                <input type="text" id="otroTipo" placeholder="Indique el tipo...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tiempo Extraordinario -->
+                    <div class="form-section">
+                        <h3>⏰ Tiempo Extraordinario</h3>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="tieneHorasExtras">
+                                ¿Realizó tiempo extraordinario?
+                            </label>
+                        </div>
+                        <div id="horasExtrasContainer" style="display: none;">
+                            <div id="horasExtrasList"></div>
+                            <button type="button" id="btnAgregarHoras" class="btn-secondary btn-sm">
+                                ➕ Agregar Registro de Horas
+                            </button>
+                            <div id="horasExtrasTotal" class="horas-extras-total" style="display: none;">
+                                <strong>Total de horas extras:</strong> <span id="totalHorasValue">0</span> horas
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="form-section">
+                        <div class="form-group full-width">
+                            <label for="notas">Notas / Observaciones</label>
+                            <textarea id="notas" rows="3" placeholder="Información adicional..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary modal-close">Cancelar</button>
+                <button type="submit" form="nombramientoForm" class="btn-primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Prorroga -->
+    <div id="prorrogaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Prórroga de Nombramiento</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="prorrogaForm">
+                    <input type="hidden" id="prorrogaNombramientoId">
+                    <div class="form-group">
+                        <label>Fecha actual hasta:</label>
+                        <input type="text" id="prorrogaFechaActual" readonly class="readonly-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="prorrogaNuevaFecha">Nueva fecha hasta *</label>
+                        <input type="date" id="prorrogaNuevaFecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Días adicionales:</label>
+                        <input type="text" id="prorrogaDiasAdicionales" readonly class="readonly-field">
+                    </div>
+                    <div class="form-group">
+                        <label>Total de días (con prórroga):</label>
+                        <input type="text" id="prorrogaTotalDias" readonly class="readonly-field">
+                    </div>
+                    <div class="form-group">
+                        <label for="prorrogaNotas">Notas de la prórroga</label>
+                        <textarea id="prorrogaNotas" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary modal-close">Cancelar</button>
+                <button type="submit" form="prorrogaForm" class="btn-primary">Aplicar Prórroga</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for User Profile -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Mi Perfil</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="userName">Nombre Completo *</label>
+                        <input type="text" id="userName" placeholder="Ej: Juan Pérez González" required>
+                        <small class="help-text">Este nombre aparecerá en los reportes</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="userCedula">Número de Cédula (opcional)</label>
+                        <input type="text" id="userCedula" placeholder="Ej: 1-1234-5678">
+                    </div>
+                    <div class="form-group">
+                        <label for="userEmail">Correo Electrónico (opcional)</label>
+                        <input type="email" id="userEmail" placeholder="Ej: juan.perez@ccss.sa.cr">
+                    </div>
+                    <div class="form-section">
+                        <h3>⚙️ Configuración</h3>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="notificationsEnabled">
+                                Recibir notificaciones de nombramientos próximos a vencer
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="notificationDays">Días de anticipación para notificaciones</label>
+                            <select id="notificationDays">
+                                <option value="7">7 días antes</option>
+                                <option value="15" selected>15 días antes</option>
+                                <option value="30">30 días antes</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary modal-close">Cancelar</button>
+                <button type="submit" form="profileForm" class="btn-primary">Guardar Perfil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Procesando...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.7.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="data/centros-ccss.js?v=2"></script>
+    <script src="data/puestos-ccss.js?v=2"></script>
+    <script src="js/db.js?v=2"></script>
+    <script src="js/notifications.js?v=2"></script>
+    <script src="js/charts.js?v=2"></script>
+    <script src="js/reports.js?v=2"></script>
+    <script src="js/app.js?v=2"></script>
+    <script src="service-worker-register.js?v=2"></script>
+</body>
+</html>
