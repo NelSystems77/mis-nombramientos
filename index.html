@@ -79,28 +79,28 @@
 
             <!-- Stats Cards -->
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card" data-action="view-all" style="cursor: default;">
                     <div class="stat-icon">📅</div>
                     <div class="stat-content">
                         <div class="stat-value" id="totalDias">0</div>
                         <div class="stat-label">Días Totales</div>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card clickable" data-action="view-nombramientos" title="Clic para ver todos los nombramientos">
                     <div class="stat-icon">📝</div>
                     <div class="stat-content">
                         <div class="stat-value" id="totalNombramientos">0</div>
                         <div class="stat-label">Nombramientos</div>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card clickable" data-action="view-horas-extras" title="Clic para ver nombramientos con horas extras">
                     <div class="stat-icon">⏰</div>
                     <div class="stat-content">
                         <div class="stat-value" id="horasExtras">0</div>
                         <div class="stat-label">Horas Extras</div>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card clickable" data-action="view-proximos-vencer" title="Clic para ver nombramientos por vencer">
                     <div class="stat-icon">🔔</div>
                     <div class="stat-content">
                         <div class="stat-value" id="proximosVencer">0</div>
@@ -147,6 +147,10 @@
             </div>
 
             <!-- Filters -->
+            <div id="filterAlert" class="filter-alert" style="display: none;">
+                <span class="filter-alert-text"></span>
+                <button class="btn-clear-filters" id="btnClearFilters">✕ Limpiar Filtros</button>
+            </div>
             <div class="filters-bar">
                 <input type="text" id="searchNombramientos" placeholder="Buscar..." class="search-input">
                 <select id="filterTipo">
