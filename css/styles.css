@@ -1334,4 +1334,73 @@ body {
     border: 1px solid #ccc;
     break-inside: avoid;
   }
+/* Horario Preview */
+.horario-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(0, 102, 204, 0.05), rgba(0, 166, 81, 0.05));
+  border-left: 4px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  display: none;
 }
+
+#horarioPreview:not(:empty) {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.horario-info-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.horario-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.horario-item .icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.horario-item strong {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Campos personalizados de horario */
+#horarioCustomFields {
+  animation: fadeIn 0.3s ease;
+}
+
+#horarioCustomFields .form-group input[type="time"] {
+  font-size: 1rem;
+  padding: 0.75rem;
+}
+
+#horarioCustomFields .form-group input[type="time"]:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(0, 166, 81, 0.1);
+}
+
+/* Responsive para horarios */
+@media (max-width: 768px) {
+  .horario-info-preview {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .horario-item {
+    justify-content: flex-start;
+    padding: 0.5rem;
+    background: var(--bg-primary);
+    border-radius: 6px;
+  }
+}
+  
