@@ -4,6 +4,14 @@ class App {
     this.currentView = 'dashboard';
     this.currentNombramiento = null;
     this.horasExtrasCounter = 0;
+    this.horarios = {
+  '10pm-6am': { entrada: '22:00', salida: '06:00' },
+  '6am-3pm': { entrada: '06:00', salida: '15:00' },
+  '7am-4pm': { entrada: '07:00', salida: '16:00' },
+  '8am-5pm': { entrada: '08:00', salida: '17:00' },
+  '2pm-10pm': { entrada: '14:00', salida: '22:00' },
+  '4pm-10pm': { entrada: '16:00', salida: '22:00' }
+};
     this.theme = 'light';
     this.currentFilter = null; // Para filtros especiales del dashboard
   }
@@ -41,6 +49,7 @@ class App {
       this.showLoading(false);
     }
   }
+  
 
   setupEventListeners() {
     // Navegación
@@ -51,6 +60,60 @@ class App {
       });
     });
 
+    // Horario preset change
+const horarioPreset = document.getElementById('horarioPreset');
+if (horarioPreset) {
+  horarioPreset.addEventListener('change', (e) => {
+    const value = e.target.value;
+    const customFields = document.getElementById('horarioCustomFields');
+    const horaEntrada = document.getElementById('horaEntrada');
+    const horaSalida = document.getElementById('horaSalida');
+    
+    if (value === 'otro') {
+      // Mostrar campos personalizados
+      customFields.style.display = 'block';
+      horaEntrada.required = true;
+      horaSalida.required = true;
+      document.getElementById('horarioPreview').innerHTML = '';
+    } else if (value && this.horarios[value]) {
+      // Usar horario predefinido
+      customFields.style.display = 'none';
+      horaEntrada.required = false;
+      horaSalida.required = false;
+      
+      const horario = this.horarios[value];
+      horaEntrada.value = horario.entrada;
+      horaSalida.value = horario.salida;
+      
+      this.updateHorarioPreview(horario.entrada, horario.salida);
+    } else {
+      customFields.style.display = 'none';
+      horaEntrada.required = false;
+      horaSalida.required = false;
+      horaEntrada.value = '';
+      horaSalida.value = '';
+      document.getElementById('horarioPreview').innerHTML = '';
+    }
+  });
+}
+
+// Cambios en campos de hora personalizados
+const horaEntrada = document.getElementById('horaEntrada');
+const horaSalida = document.getElementById('horaSalida');
+if (horaEntrada && horaSalida) {
+  horaEntrada.addEventListener('change', () => {
+    if (horaEntrada.value && horaSalida.value) {
+      this.updateHorarioPreview(horaEntrada.value, horaSalida.value);
+    }
+  });
+  
+  horaSalida.addEventListener('change', () => {
+    if (horaEntrada.value && horaSalida.value) {
+      this.updateHorarioPreview(horaEntrada.value, horaSalida.value);
+    }
+  });
+}
+    
     // Botón instalar PWA
     const installBtn = document.getElementById('installBtn');
     if (installBtn) {
@@ -435,7 +498,7 @@ class App {
       return;
     }
 
-    // Ordenar por fecha más reciente
+// Ordenar por fecha más reciente
     nombramientos.sort((a, b) => new Date(b.fechaDesde) - new Date(a.fechaDesde));
 
     container.innerHTML = nombramientos.map(n => {
@@ -475,6 +538,12 @@ class App {
               <span class="icon">📅</span>
               ${new Date(n.fechaDesde).toLocaleDateString('es-CR')} - ${new Date(n.fechaHasta).toLocaleDateString('es-CR')}
             </div>
+            ${n.horaEntrada && n.horaSalida ? `
+              <div class="info-row">
+                <span class="icon">🕐</span>
+                Horario: ${this.formatTime(n.horaEntrada)} - ${this.formatTime(n.horaSalida)}
+              </div>
+            ` : ''}
             ${n.horasExtras && n.horasExtras.length > 0 ? `
               <div class="info-row horas-extras-highlight">
                 <span class="icon">⏰</span>
@@ -511,7 +580,7 @@ class App {
       const search = document.getElementById('searchNombramientos').value.toLowerCase();
       const filterTipo = document.getElementById('filterTipo').value;
       const filterLugar = document.getElementById('filterLugar').value;
-      const filterEstado = document.getElementById('filterEstado').value;
+      const filterEstado = document.getElementById('filterEstado').value();
 
       let filtered = nombramientos.filter(n => {
         // Búsqueda
@@ -582,6 +651,13 @@ class App {
     document.getElementById('puesto').value = '';
     document.getElementById('lugar').disabled = true;
     this.horasExtrasCounter = 0;
+    document.getElementById('horarioPreset').value = '';
+    document.getElementById('horarioCustomFields').style.display = 'none';
+    document.getElementById('horaEntrada').value = '';
+    document.getElementById('horaSalida').value = '';
+    document.getElementById('horaEntrada').required = false;
+    document.getElementById('horaSalida').required = false;
+    document.getElementById('horarioPreview').innerHTML = '';
     this.updateHorasExtrasTotal();
 
     if (id) {
@@ -606,7 +682,7 @@ class App {
         return;
       }
 
-      // Llenar formulario
+// Llenar formulario
       document.getElementById('tipoLugar').value = nombramiento.tipoLugar || '';
       await this.loadLugares(nombramiento.tipoLugar);
       document.getElementById('lugar').value = nombramiento.lugar || '';
@@ -620,11 +696,27 @@ class App {
         document.getElementById('otroTipoContainer').style.display = 'block';
         document.getElementById('otroTipo').value = nombramiento.otroTipo || '';
       }
-
+      
       document.getElementById('notas').value = nombramiento.notas || '';
-
+      
+      // Cargar horario
+      document.getElementById('horarioPreset').value = nombramiento.horarioPreset || '';
+      if (nombramiento.horarioPreset === 'otro' && nombramiento.horaEntrada && nombramiento.horaSalida) {
+        document.getElementById('horarioCustomFields').style.display = 'block';
+        document.getElementById('horaEntrada').value = nombramiento.horaEntrada;
+        document.getElementById('horaSalida').value = nombramiento.horaSalida;
+        document.getElementById('horaEntrada').required = true;
+        document.getElementById('horaSalida').required = true;
+        this.updateHorarioPreview(nombramiento.horaEntrada, nombramiento.horaSalida);
+      } else if (nombramiento.horarioPreset && this.horarios[nombramiento.horarioPreset]) {
+        const horario = this.horarios[nombramiento.horarioPreset];
+        document.getElementById('horaEntrada').value = horario.entrada;
+        document.getElementById('horaSalida').value = horario.salida;
+        this.updateHorarioPreview(horario.entrada, horario.salida);
+      }
+      
       this.calculateDias();
-
+      
       // Horas extras
       if (nombramiento.horasExtras && nombramiento.horasExtras.length > 0) {
         document.getElementById('tieneHorasExtras').checked = true;
@@ -827,7 +919,10 @@ class App {
         ),
         puesto: document.getElementById('puesto').value,
         tipoNombramiento: document.getElementById('tipoNombramiento').value,
-        notas: document.getElementById('notas').value
+        notas: document.getElementById('notas').value,
+        horarioPreset: document.getElementById('horarioPreset').value,
+        horaEntrada: document.getElementById('horaEntrada').value,
+        horaSalida: document.getElementById('horaSalida').value
       };
 
       if (formData.tipoNombramiento === 'otro') {
@@ -1167,4 +1262,56 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => app.init());
 } else {
   app.init();
+
+// Métodos para gestión de horarios
+updateHorarioPreview(entrada, salida) {
+  const preview = document.getElementById('horarioPreview');
+  if (!preview) return;
+  
+  const horas = this.calcularHorasJornada(entrada, salida);
+  const entradaFormateada = this.formatTime(entrada);
+  const salidaFormateada = this.formatTime(salida);
+  
+  preview.innerHTML = `
+    <div class="horario-info-preview">
+      <div class="horario-item">
+        <span class="icon">🕐</span>
+        <strong>Entrada:</strong> ${entradaFormateada}
+      </div>
+      <div class="horario-item">
+        <span class="icon">🕐</span>
+        <strong>Salida:</strong> ${salidaFormateada}
+      </div>
+      <div class="horario-item">
+        <span class="icon">⏱️</span>
+        <strong>Jornada:</strong> ${horas} horas
+      </div>
+    </div>
+  `;
+}
+
+calcularHorasJornada(entrada, salida) {
+  const [horaE, minE] = entrada.split(':').map(Number);
+  const [horaS, minS] = salida.split(':').map(Number);
+  
+  let minutosE = horaE * 60 + minE;
+  let minutosS = horaS * 60 + minS;
+  
+  // Si salida es menor que entrada, es el día siguiente
+  if (minutosS < minutosE) {
+    minutosS += 24 * 60;
+  }
+  
+  const totalMinutos = minutosS - minutosE;
+  return (totalMinutos / 60).toFixed(1);
+}
+
+formatTime(time) {
+  const [hora, minuto] = time.split(':');
+  const h = parseInt(hora);
+  const periodo = h >= 12 ? 'PM' : 'AM';
+  const hora12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+  return `${hora12}:${minuto} ${periodo}`;
+}
+  
 }
