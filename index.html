@@ -302,7 +302,44 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- NUEVA SECCIÓN: HORARIO DE TRABAJO -->
+<div class="form-section">
+    <h3>⏰ Horario de Trabajo</h3>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="horarioPreset">Seleccione su Horario *</label>
+            <select id="horarioPreset" required>
+                <option value="">Seleccione...</option>
+                <option value="10pm-6am">10:00 PM - 6:00 AM (Nocturno)</option>
+                <option value="6am-3pm">6:00 AM - 3:00 PM (Matutino)</option>
+                <option value="7am-4pm">7:00 AM - 4:00 PM (Diurno Estándar)</option>
+                <option value="8am-5pm">8:00 AM - 5:00 PM (Administrativo)</option>
+                <option value="2pm-10pm">2:00 PM - 10:00 PM (Vespertino)</option>
+                <option value="4pm-10pm">4:00 PM - 10:00 PM (Tarde)</option>
+                <option value="otro">Otro (Personalizado)</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Campos personalizados de horario -->
+    <div id="horarioCustomFields" style="display: none;">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="horaEntrada">Hora de Entrada *</label>
+                <input type="time" id="horaEntrada">
+            </div>
+            <div class="form-group">
+                <label for="horaSalida">Hora de Salida *</label>
+                <input type="time" id="horaSalida">
+            </div>
+        </div>
+    </div>
 
+    <!-- Preview del horario -->
+    <div id="horarioPreview" class="horario-preview"></div>
+</div>
+                    
                     <!-- Puesto -->
                     <div class="form-section">
                         <h3>👤 Información del Puesto</h3>
