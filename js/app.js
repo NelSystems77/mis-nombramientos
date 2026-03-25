@@ -1166,7 +1166,7 @@ if (horaEntrada && horaSalida) {
     await dbManager.setConfig('theme', this.theme);
   }
 
-  // Perfil de Usuario
+// Perfil de Usuario
   async openProfileModal() {
     const profile = await dbManager.getConfig('userProfile') || {};
     
@@ -1176,7 +1176,11 @@ if (horaEntrada && horaSalida) {
     document.getElementById('notificationsEnabled').checked = profile.notificationsEnabled !== false;
     document.getElementById('notificationDays').value = profile.notificationDays || '15';
     
-    this.openModal('profileModal');
+    // Abrir modal directamente
+    const modal = document.getElementById('profileModal');
+    if (modal) {
+      modal.classList.add('active');
+    }
   }
 
   async handleProfileSubmit(e) {
@@ -1196,14 +1200,19 @@ if (horaEntrada && horaSalida) {
       // Actualizar saludo
       this.updateUserGreeting();
       
-      this.closeModal('profileModal');
+      // Cerrar modal
+      const modal = document.getElementById('profileModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+      
       notificationManager.success('Perfil actualizado correctamente');
     } catch (error) {
       console.error('Error al guardar perfil:', error);
       notificationManager.error('Error al guardar el perfil');
     }
   }
-
+  
   async updateUserGreeting() {
     const profile = await dbManager.getConfig('userProfile');
     const greetingEl = document.getElementById('userGreeting');
