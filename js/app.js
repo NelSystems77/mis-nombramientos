@@ -1252,6 +1252,57 @@ if (horaEntrada && horaSalida) {
       minute: '2-digit'
     });
   }
+
+  // Métodos para gestión de horarios
+  updateHorarioPreview(entrada, salida) {
+    const preview = document.getElementById('horarioPreview');
+    if (!preview) return;
+    
+    const horas = this.calcularHorasJornada(entrada, salida);
+    const entradaFormateada = this.formatTime(entrada);
+    const salidaFormateada = this.formatTime(salida);
+    
+    preview.innerHTML = `
+      <div class="horario-info-preview">
+        <div class="horario-item">
+          <span class="icon">🕐</span>
+          <strong>Entrada:</strong> ${entradaFormateada}
+        </div>
+        <div class="horario-item">
+          <span class="icon">🕐</span>
+          <strong>Salida:</strong> ${salidaFormateada}
+        </div>
+        <div class="horario-item">
+          <span class="icon">⏱️</span>
+          <strong>Jornada:</strong> ${horas} horas
+        </div>
+      </div>
+    `;
+  }
+
+  calcularHorasJornada(entrada, salida) {
+    const [horaE, minE] = entrada.split(':').map(Number);
+    const [horaS, minS] = salida.split(':').map(Number);
+    
+    let minutosE = horaE * 60 + minE;
+    let minutosS = horaS * 60 + minS;
+    
+    // Si salida es menor que entrada, es el día siguiente
+    if (minutosS < minutosE) {
+      minutosS += 24 * 60;
+    }
+    
+    const totalMinutos = minutosS - minutosE;
+    return (totalMinutos / 60).toFixed(1);
+  }
+
+  formatTime(time) {
+    const [hora, minuto] = time.split(':');
+    const h = parseInt(hora);
+    const periodo = h >= 12 ? 'PM' : 'AM';
+    const hora12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+    return `${hora12}:${minuto} ${periodo}`;
+  }
 }
 
 // Instancia global de la app
@@ -1262,56 +1313,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => app.init());
 } else {
   app.init();
-
-// Métodos para gestión de horarios
-updateHorarioPreview(entrada, salida) {
-  const preview = document.getElementById('horarioPreview');
-  if (!preview) return;
-  
-  const horas = this.calcularHorasJornada(entrada, salida);
-  const entradaFormateada = this.formatTime(entrada);
-  const salidaFormateada = this.formatTime(salida);
-  
-  preview.innerHTML = `
-    <div class="horario-info-preview">
-      <div class="horario-item">
-        <span class="icon">🕐</span>
-        <strong>Entrada:</strong> ${entradaFormateada}
-      </div>
-      <div class="horario-item">
-        <span class="icon">🕐</span>
-        <strong>Salida:</strong> ${salidaFormateada}
-      </div>
-      <div class="horario-item">
-        <span class="icon">⏱️</span>
-        <strong>Jornada:</strong> ${horas} horas
-      </div>
-    </div>
-  `;
-}
-
-calcularHorasJornada(entrada, salida) {
-  const [horaE, minE] = entrada.split(':').map(Number);
-  const [horaS, minS] = salida.split(':').map(Number);
-  
-  let minutosE = horaE * 60 + minE;
-  let minutosS = horaS * 60 + minS;
-  
-  // Si salida es menor que entrada, es el día siguiente
-  if (minutosS < minutosE) {
-    minutosS += 24 * 60;
-  }
-  
-  const totalMinutos = minutosS - minutosE;
-  return (totalMinutos / 60).toFixed(1);
-}
-
-formatTime(time) {
-  const [hora, minuto] = time.split(':');
-  const h = parseInt(hora);
-  const periodo = h >= 12 ? 'PM' : 'AM';
-  const hora12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
-  return `${hora12}:${minuto} ${periodo}`;
-}
-  
 }
